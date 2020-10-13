@@ -1,0 +1,154 @@
+<div class="container mt-3">
+    <h2>Filter for satellite images</h2>
+
+    <div class="row">
+        <div class="col">
+            <mat-form-field style="width: 100%;">
+                <mat-select placeholder="Associations" [(ngModel)]="modelFilter.association"
+                    (ngModelChange)="getTechnicalAssistants(modelFilter.association)">
+                    <mat-option value="choise">Choise ...</mat-option>
+                    <mat-option *ngFor="let x of associations" value="{{x.id}}">{{x.name}}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <div class="col">
+            <mat-form-field style="width: 100%;">
+                <mat-select placeholder="Technical Assistant" [(ngModel)]="modelFilter.technicalAssistant"
+                    (ngModelChange)="getFarmerByTechnical(modelFilter.technicalAssistant)">
+                    <mat-option value="choise">Choise ...</mat-option>
+                    <mat-option *ngFor="let x of technicalAssistant" value="{{x.id}}">{{x.person.name}}
+                        {{x.person.last_name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col">
+
+            <p>
+                <mat-form-field style="width: 100%;">
+                    <mat-select [formControl]="farmCtrl" placeholder="Farm" #singleSelect [(ngModel)]="modelFilter.farm"
+                        (ngModelChange)="getPlots(modelFilter.farm.id)">
+                        <mat-option>
+                            <ngx-mat-select-search class="form-control" [formControl]="farmFilterCtrl">
+                            </ngx-mat-select-search>
+                        </mat-option>
+
+                        <mat-option *ngFor="let farm of filteredFarm | async" [value]="farm.plot.farm">
+                            {{farm.plot.farm.name}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </p>
+
+        </div>
+        <div class="col">
+
+            <mat-form-field style="width: 100%;">
+                <mat-select placeholder="Plot" [(ngModel)]="modelFilter.plot"
+                    (ngModelChange)="getProductionEvents(modelFilter.technicalAssistant, modelFilter.plot.id)">
+                    <mat-option value="choise">Choise ...</mat-option>
+                    <mat-option *ngFor="let x of plots" [value]="x">{{x.name}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col">
+
+
+            <mat-form-field style="width: 100%;">
+                <mat-select placeholder="Production events" [(ngModel)]="modelFilter.productionEvent"
+                    (ngModelChange)="getBlockForm(modelFilter.productionEvent.form)">
+                    <mat-option value="choise">Choise ...</mat-option>
+                    <mat-option *ngFor="let x of productionEvents" [value]="x">{{x.created | date: 'fullDate'}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="col">
+
+            <mat-form-field style="width: 100%;">
+                <mat-select placeholder="Choise the question related with plot's area"
+                    [(ngModel)]="modelFilter.question"
+                    (ngModelChange)="getResponsesNumeric(modelFilter.question, modelFilter.productionEvent.id)">
+                    <mat-option value="choise">Choise ...</mat-option>
+                    <mat-option *ngFor="let x of question" value="{{x.id}}">{{x.label}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+
+        <div class="col">
+
+            <mat-form-field style="width: 100%;">
+                <mat-select placeholder="Choise the question related with seedtime"
+                    [(ngModel)]="modelFilter.questionDate"
+                    (ngModelChange)="getResponsesDate(modelFilter.questionDate, modelFilter.productionEvent.id)">
+                    <mat-option value="choise">Choise ...</mat-option>
+                    <mat-option *ngFor="let x of questionDate" value="{{x.id}}">{{x.label}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+    <span>
+        <p *ngIf="statusDescription"> The plot total area is: {{responsesNumeric[0].fixed_value}} Ha</p>
+    </span>
+    <p *ngIf="statusDescription"> <span> The seedtime was:</span> {{responsesDate[0].fixed_value | date: 'fullDate'}}</p>
+    <button class="btn btn-primary" (click)="getDataframe()">Filter</button>
+    <br>
+    <hr>
+    <div class="overcomes" id="overcomes">
+        <h2>Overcomes</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col" *ngFor="let colum of headers" class="items-table" style="text-align: center;">
+                        {{colum}}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let row of dataframe | paginate: { itemsPerPage: 4, currentPage: pageActual}"
+                    class="items-table" style="text-align: center;">
+                    <td>
+                        {{row.index_col}}
+                    </td>
+                    <td>
+                        {{row.dates | date: 'fullDate'}}
+                    </td>
+                    <td>
+                        {{row.cover_percentage}}
+                    </td>
+                    <td>
+                        <button class="btn btn-info" (click)="drawMap(row.index_col)">Select</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <pagination-controls (pageChange)="pageActual = $event">
+    
+        </pagination-controls>
+    </div>
+    <br>
+
+    <ngx-spinner></ngx-spinner>
+    <hr>
+    <h2 *ngIf="runGraph"> Draw graph</h2>
+    <app-plot *ngIf="runGraph" [drawGraph]="runGraph" [startDate]="startDate" [endDate]="endDate" [area]="area" [lon]="lon" [lat]="lat"></app-plot>
+    <hr>
+    <h2 *ngIf="runGraph">Draw map</h2>
+    <div [innerHTML]="map | async" class="mb-4">
+    </div>
+    <br>
+    <button *ngIf="runGraph" class="btn btn-info mb-2" (click)="cleaned()">New search</button>
+</div>

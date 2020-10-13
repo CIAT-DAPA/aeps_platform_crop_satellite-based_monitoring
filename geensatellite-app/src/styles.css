@@ -1,0 +1,13 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import url('https://fonts.googleapis.com/css2?family=Fjalla+One&family=Source+Sans+Pro:wght@600&display=swap');
+body {
+    margin: 0;
+ /*    font-family: "Source Sans Pro", sans-serif; */
+}
+
+h1, h2, h3, h4, h5, h6 {
+    /* color: red; */
+    font-family: 'Muli' ;
+    /* font-family: "Fjalla One", sans-serif; */
+}
